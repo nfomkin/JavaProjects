@@ -1,27 +1,36 @@
 package services;
 
 import dao.*;
+import dto.*;
 import entity.*;
 import java.util.*;
 
 public class OwnerService {
 
-  private OwnerDao ownerDao = OwnerDao.getInstance();
+  private OwnerDao dao;
 
-  public Optional<Owner> find(Long id) {
-    return ownerDao.findById(id);
+  public OwnerService(OwnerDao dao) {
+    this.dao = dao;
   }
 
+  public Optional<Owner> findByID(Long id) {
+    return dao.findById(id);
+  }
+
+  public List<Owner> findAll() { return dao.findAll();}
+
+  public List<Owner> findAll(OwnerFilter filter) {return dao.findAll(filter);}
+
   public Owner save(Owner owner) {
-    return ownerDao.save(owner);
+    return dao.save(owner);
   }
 
   public void update(Owner owner) {
-    ownerDao.update(owner);
+    dao.update(owner);
   }
 
   public boolean delete(Long id) {
-    return ownerDao.delete(id);
+    return dao.delete(id);
   }
 
 }

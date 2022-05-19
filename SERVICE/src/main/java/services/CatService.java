@@ -3,21 +3,25 @@ package services;
 import dao.*;
 import dto.*;
 import entity.*;
-import java.sql.*;
 import java.util.*;
 
 public class CatService {
-  private static final CatDao dao = CatDao.getInstance();
+  private CatDao dao;
 
+  public CatService(CatDao dao) {
+    this.dao = dao;
+  }
   public Optional<Cat> findById(Long id) {
     return dao.findById(id);
   }
+
+  public List<Cat> findAll() { return dao.findAll(); }
 
   public List<Cat> findAll(CatFilter filter) {
     return dao.findAll(filter);
   }
 
-  public Cat save(Cat cat) throws SQLException {
+  public Cat save(Cat cat) {
     return dao.save(cat);
   }
 
