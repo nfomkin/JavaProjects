@@ -29,7 +29,11 @@ public class Owner {
         "id=" + id +
         ", name='" + name + '\'' +
         ", birthDate=" + birthDate +
-        ", cats=" + cats +
         '}';
+  }
+
+  public void addCat(Cat cat) {
+    cats.add(cat);
+    cat.setOwner(this);
   }
 }

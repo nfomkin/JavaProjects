@@ -1,12 +1,15 @@
 package dao;
 
 import entities.*;
+import java.util.*;
 import org.hibernate.*;
+import org.slf4j.*;
 import utils.*;
 
 public class CatDao {
 
-  private static CatDao instance = new CatDao();
+  private static final CatDao instance = new CatDao();
+  private static final Logger log = LoggerFactory.getLogger(CatDao.class);
 
   private CatDao() {}
 
@@ -14,16 +17,22 @@ public class CatDao {
     return instance;
   }
 
-  public Cat findById(Long id) {
+  public Optional<Cat> findById(Long id) {
+     log.info("method findById");
      Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession();
      Transaction tx = session.beginTransaction();
      Cat cat = session.get(Cat.class, id);
      tx.commit();
      session.close();
-     return cat;
+     return Optional.ofNullable(cat);
+  }
+
+  public List<Cat> findAll() {
+    return null;
   }
 
   public Cat save(Cat cat) {
+    log.info("method save");
     Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession();
     session.beginTransaction();
     session.persist(cat);
@@ -33,6 +42,7 @@ public class CatDao {
   }
 
   public void update(Cat cat) {
+    log.info("method update");
     Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession();
     Transaction tx1 = session.beginTransaction();
     session.merge(cat);
@@ -41,6 +51,7 @@ public class CatDao {
   }
 
   public void delete(Cat cat) {
+    log.info("method delete");
     Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession();
     Transaction tx1 = session.beginTransaction();
     session.remove(cat);

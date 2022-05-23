@@ -15,7 +15,6 @@ import lombok.*;
 @Entity
 @Table(name = "cats", schema = "kotiki")
 public class Cat {
-
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -32,7 +31,7 @@ public class Cat {
   @JoinTable(name = "friendship", schema = "kotiki",
   joinColumns = @JoinColumn(name = "cat1_id"),
   inverseJoinColumns = @JoinColumn(name = "cat2_id"))
-  private List<Cat> friends = new ArrayList<Cat>();
+  private List<Cat> friends = new ArrayList<>();
 
   @Override
   public String toString() {
@@ -42,8 +41,7 @@ public class Cat {
         ", birthDate=" + birthDate +
         ", breed='" + breed + '\'' +
         ", color='" + color + '\'' +
-        ", owner=" + owner.getId() + " " + owner.getName() + '\'' +
-        ", friends=" + friends.stream().map(f -> f.id + f.name).collect(Collectors.joining("||")) +
+        ", owner=" + owner.getId() + " " + owner.getName() + '\''+
         '}';
   }
 

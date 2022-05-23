@@ -1,6 +1,7 @@
 package dao;
 
 import entities.*;
+import java.util.*;
 import utils.*;
 import org.hibernate.*;
 
@@ -14,13 +15,13 @@ public class OwnerDao {
     return instance;
   }
 
-  public Owner findById(Long id) {
+  public Optional<Owner> findById(Long id) {
     Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession();
     Transaction tx = session.beginTransaction();
     Owner owner = session.get(Owner.class, id);
     tx.commit();
     session.close();
-    return owner;
+    return Optional.ofNullable(owner);
   }
 
   public Owner save(Owner owner) {

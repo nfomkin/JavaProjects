@@ -3,21 +3,20 @@ package service;
 import dao.*;
 import entities.*;
 import java.util.*;
+import javax.swing.text.html.*;
 
 public class CatService {
-  private static final CatDao dao = CatDao.getInstance();
+  private CatDao dao;
 
-  public Cat findById(Long id) {
+  public CatService(CatDao dao) {
+    this.dao = dao;
+  }
+
+  public Optional<Cat> findById(Long id) {
     return dao.findById(id);
   }
 
-  public Cat save(Cat cat, List<Cat> friends) {
-    if (friends != null) {
-      for (Cat cat1 : friends) {
-        cat.addFriend(cat1);
-        cat1.addFriend(cat);
-      }
-    }
+  public Cat save(Cat cat) {
     return dao.save(cat);
   }
 
