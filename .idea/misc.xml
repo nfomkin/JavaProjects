@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="FrameworkDetectionExcludesConfiguration">
+    <file type="web" url="file://$PROJECT_DIR$/kotiki-java/controller" />
+    <file type="web" url="file://$PROJECT_DIR$/kotiki-java/dao" />
+    <file type="web" url="file://$PROJECT_DIR$/kotiki-java/service" />
+  </component>
   <component name="MavenProjectsManager">
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/kotiki-java/pom.xml" />
+        <option value="$PROJECT_DIR$/kotiki-java/service/pom.xml" />
       </list>
     </option>
   </component>

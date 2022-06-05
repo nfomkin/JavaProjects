@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Show</title>
+</head>
+<body>
+<p th:text="${cat.getName()}"></p>
+<p th:text="${cat.getBirthDate()}"></p>
+<p th:text="${cat.getColor()}"></p>
+<p th:text="${cat.getBreed()}"></p>
+<p th:text="${cat.getOwnerName()}"></p>
+<hr/>
+<a th:href="@{/cats/{id}/edit(id=${cat.getId()})}" th:text="Edit"></a>
+</body>
+</html>
