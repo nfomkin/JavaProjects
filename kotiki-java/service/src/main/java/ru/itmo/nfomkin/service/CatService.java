@@ -17,6 +17,8 @@ public class CatService {
 
   public List<Cat> findAll() {return repository.findAll();}
 
+  public List<Cat> findByName(String name) { return repository.findByName(name); }
+
   public Optional<Cat> findById(Long id) {
     return repository.findById(id);
   }

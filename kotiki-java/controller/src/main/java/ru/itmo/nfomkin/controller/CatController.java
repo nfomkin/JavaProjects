@@ -1,22 +1,22 @@
 package ru.itmo.nfomkin.controller;
 
 import java.util.List;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import ru.itmo.nfomkin.dto.cat.CatCreationDto;
-import ru.itmo.nfomkin.dto.cat.CatDto;
+import org.springframework.web.bind.annotation.RestController;
+import ru.itmo.nfomkin.dto.CatDto;
 import ru.itmo.nfomkin.entity.Cat;
 import ru.itmo.nfomkin.exception.NoEntityException;
-import ru.itmo.nfomkin.mapper.cat.CatMapper;
+import ru.itmo.nfomkin.mapper.CatMapper;
 import ru.itmo.nfomkin.service.CatService;
 
-@Controller
+@RestController
 @RequestMapping("/cats")
 public class CatController {
   private final CatService service;
@@ -29,60 +29,68 @@ public class CatController {
   }
 
   @GetMapping()
-  public String index(Model model) {
-    List<CatDto> catDtos = service.findAll().stream()
-            .map(mapper::toDto).toList();
-    model.addAttribute("cats", catDtos);
-    return "cats/index";
+  public ResponseEntity<List<CatDto>> index() {
+    List<CatDto> cats =  service.findAll().stream().map(mapper::toDto).toList();
+    return !cats.isEmpty()
+        ? new ResponseEntity<>(cats, HttpStatus.OK)
+        : new ResponseEntity<>(HttpStatus.NOT_FOUND);
   }
 
 
   @GetMapping("/{id}")
-  public String show(@PathVariable("id") Long id, Model model) {
-      try {
-        Cat cat = service.findById(id).orElseThrow(() -> new NoEntityException(String.format("Cat with id = %d not found", id)));
-        CatDto catDto = mapper.toDto(cat);
-        model.addAttribute("cat", catDto);
-        return "cats/show";
-      } catch (NoEntityException e) {
-        model.addAttribute("message", e.getMessage());
-        return "error";
-      }
-  }
-
-  @GetMapping("/new")
-  public String newCat(Model model) {
-    model.addAttribute("cat", new CatCreationDto());
-    return "cats/new";
-  }
-
-  @PostMapping()
-  public String create(@ModelAttribute("cat") CatCreationDto catCreationDto) {
-    service.saveOrUpdate(mapper.toCat(catCreationDto));
-    return "redirect:/cats";
-  }
-
-  @GetMapping("/{id}/edit")
-  public String edit(Model model, @PathVariable("id") Long id)
-  {
+  public ResponseEntity<CatDto> show(@PathVariable("id") Long id) {
     try {
-      Cat cat = service.findById(id).orElseThrow(
-          () -> new NoEntityException(String.format("Cat with id = %d not found", id))
-      );
-      CatCreationDto catCreationDto = mapper.toCreationDto(cat);
-      model.addAttribute("cat", catCreationDto);
-      return "cats/edit";
+      CatDto cat = mapper.toDto(service.findById(id).orElseThrow(() -> new NoEntityException("cat not found")));
+      return new ResponseEntity<>(cat, HttpStatus.OK);
     } catch (NoEntityException e) {
-        model.addAttribute("message", e.getMessage());
-        return "error";
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
   }
 
+
+  @PostMapping()
+  public ResponseEntity<?> create(CatDto cat) {
+    try {
+      service.saveOrUpdate(mapper.toCat(cat));
+      return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+  }
+
+
   @PatchMapping("/{id}")
-  public String update(@ModelAttribute("cat") CatCreationDto catCreationDto) {
-    Cat cat = mapper.toCat(catCreationDto);
-    service.saveOrUpdate(cat);
-    return "redirect:cats";
+  public ResponseEntity<?> update(@PathVariable("id") Long id, CatDto catDto) {
+    try {
+      Cat cat = service.findById(id).orElse(null);
+      if (cat != null) {
+        catDto.setId(cat.getId());
+        cat = mapper.toCat(catDto);
+        service.saveOrUpdate(cat);
+        return new ResponseEntity<>(HttpStatus.OK);
+      }
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<?> delete(@PathVariable("id") Long id) {
+    Cat cat = service.findById(id).orElse(null);
+    if (cat != null) {
+      service.delete(cat);
+      return new ResponseEntity<>(HttpStatus.OK);
+    }
+    else {
+     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
   }
 
 }

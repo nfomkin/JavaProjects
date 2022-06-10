@@ -33,6 +33,7 @@ public class Cat {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
+
   private String name;
   private LocalDate birthDate;
   private String breed;

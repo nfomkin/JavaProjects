@@ -19,6 +19,8 @@ public class OwnerService {
     return repository.findById(id);
   }
 
+  public List<Owner> findByName(String name) { return repository.findByName(name); }
+
   public List<Owner> findAll() { return repository.findAll(); }
 
   public Owner saveOrUpdate(Owner owner) {
