@@ -28,7 +28,7 @@ import ru.itmo.nfomkin.enums.Color;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "cats", schema = "kotiki")
+@Table(name = "cats", schema = "kotiki2")
 public class Cat {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
