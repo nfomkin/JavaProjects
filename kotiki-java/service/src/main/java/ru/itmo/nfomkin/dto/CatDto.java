@@ -1,7 +1,9 @@
 package ru.itmo.nfomkin.dto;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Null;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,7 +16,9 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class CatDto {
+  @Null
   private Long id;
+  @NotBlank
   private String name;
   private String breed;
   private String color;
@@ -22,5 +26,5 @@ public class CatDto {
   private Long ownerId;
   private String ownerName;
   @Builder.Default
-  private List<String> friends = new ArrayList<>();
+  private Map<Long, String> friends = new HashMap<>();
 }

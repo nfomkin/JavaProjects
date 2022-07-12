@@ -9,17 +9,27 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
     password: postgres
+
   jpa:
-    properties.hibernate:
-      show_sql = true
-      format_sql = true
     hibernate:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
-      ddl-auto: create
-
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate.default_schema: kotikisecurity
 
   thymeleaf:
     cache: false
     enabled: true
     suffix: .html
+
+
+  sql:
+    init:
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
+
+server:
+  port: 8081
+

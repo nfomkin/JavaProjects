@@ -1,7 +1,5 @@
 package ru.itmo.nfomkin.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -10,21 +8,20 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import ru.itmo.nfomkin.service.OwnerService;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true, jsr250Enabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-  private final UserDetailsService userDetailsService;
+  private final OwnerService service;
+  private final PasswordEncoder passwordEncoder;
 
-  @Autowired
-  public SecurityConfig(@Qualifier("userDetailsServiceImpl") UserDetailsService userDetailsService) {
-    this.userDetailsService = userDetailsService;
+  public SecurityConfig(OwnerService service, PasswordEncoder passwordEncoder) {
+    this.service = service;
+    this.passwordEncoder = passwordEncoder;
   }
 
   @Override
@@ -36,16 +33,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .anyRequest()
         .authenticated()
         .and()
-        .formLogin()
-        .loginPage("/auth/login").permitAll()
-        .defaultSuccessUrl("/auth/success")
-        .and()
-        .logout()
-        .logoutRequestMatcher(new AntPathRequestMatcher("/auth/logout", "POST"))
-        .invalidateHttpSession(true)
-        .clearAuthentication(true)
-        .deleteCookies("JSESSIONID")
-        .logoutSuccessUrl("/auth/login");
+        .httpBasic();
   }
 
   @Override
@@ -54,15 +42,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
   }
 
   @Bean
-  protected PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder(12);
+  public DaoAuthenticationProvider daoAuthenticationProvider() {
+    DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+    provider.setPasswordEncoder(passwordEncoder);
+    provider.setUserDetailsService(service);
+    return provider;
   }
 
-  @Bean
-  protected DaoAuthenticationProvider daoAuthenticationProvider() {
-    DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-    daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
-    daoAuthenticationProvider.setUserDetailsService(userDetailsService);
-    return daoAuthenticationProvider;
-  }
 }

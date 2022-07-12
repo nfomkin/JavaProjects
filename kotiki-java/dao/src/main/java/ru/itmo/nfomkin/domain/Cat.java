@@ -1,4 +1,4 @@
-package ru.itmo.nfomkin.entity;
+package ru.itmo.nfomkin.domain;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -19,7 +19,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.itmo.nfomkin.enums.Color;
 
 
 @Setter
@@ -28,7 +27,7 @@ import ru.itmo.nfomkin.enums.Color;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "cats", schema = "kotiki2")
+@Table(name = "cats")
 public class Cat {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,7 +43,7 @@ public class Cat {
   private Owner owner;
   @Builder.Default
   @ManyToMany
-  @JoinTable(name = "friendship", schema = "kotiki",
+  @JoinTable(name = "friendship",
   joinColumns = @JoinColumn(name = "cat1_id"),
   inverseJoinColumns = @JoinColumn(name = "cat2_id"))
   private List<Cat> friends = new ArrayList<>();
@@ -63,6 +62,11 @@ public class Cat {
 
   public void addFriend(Cat cat) {
     friends.add(cat);
-    cat.friends.add(this);
+    cat.getFriends().add(this);
+  }
+
+  public void deleteFriend(Cat cat) {
+    friends.remove(cat);
+    cat.getFriends().remove(this);
   }
 }

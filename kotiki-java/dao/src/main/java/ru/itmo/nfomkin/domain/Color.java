@@ -1,4 +1,4 @@
-package ru.itmo.nfomkin.enums;
+package ru.itmo.nfomkin.domain;
 
 public enum Color {
   WHITE,

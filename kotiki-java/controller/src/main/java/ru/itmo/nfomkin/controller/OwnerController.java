@@ -1,100 +1,101 @@
 package ru.itmo.nfomkin.controller;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.itmo.nfomkin.domain.Owner;
 import ru.itmo.nfomkin.dto.OwnerDto;
-import ru.itmo.nfomkin.entity.Owner;
 import ru.itmo.nfomkin.exception.NoEntityException;
-import ru.itmo.nfomkin.mapper.OwnerMapper;
 import ru.itmo.nfomkin.service.OwnerService;
 
 
 @RestController
-@RequestMapping("/owners")
+@RequestMapping(value = "/owners")
 public class OwnerController {
 
-  private OwnerService service;
-  private OwnerMapper mapper;
+  private final OwnerService service;
 
-  public OwnerController(OwnerService service, OwnerMapper mapper) {
+  public OwnerController(OwnerService service) {
     this.service = service;
-    this.mapper = mapper;
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @GetMapping()
-  public ResponseEntity<List<OwnerDto>> index() {
-    List<OwnerDto> owners = service.findAll().stream().map(mapper::toDto).toList();
+  public ResponseEntity<List<OwnerDto>> getAll() {
+    List<OwnerDto> owners = service.findAll().stream().map(service::toDto).toList();
     return !owners.isEmpty()
         ? new ResponseEntity<>(owners, HttpStatus.OK)
         : new ResponseEntity<>(HttpStatus.NOT_FOUND);
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyAuthority('read')")
   public ResponseEntity<OwnerDto> show(@PathVariable("id") Long id) {
-    try {
-      OwnerDto ownerDto = mapper.toDto(
-          service.findById(id).orElseThrow(() -> new NoEntityException("owner not found")));
-      return new ResponseEntity<>(ownerDto, HttpStatus.OK);
-    } catch (NoEntityException e) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
+    Optional<OwnerDto> owner = service.findById(id).map(service::toDto);
+    return owner.map(ownerDto -> new ResponseEntity<>(ownerDto, HttpStatus.OK))
+        .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
   }
 
-  @PostMapping()
-  @PreAuthorize("hasAnyAuthority('write')")
-  public ResponseEntity<?> create(OwnerDto ownerDto) {
-    try {
-      service.saveOrUpdate(mapper.toOwner(ownerDto));
-      return new ResponseEntity<>(HttpStatus.CREATED);
+  @PreAuthorize("hasRole('ADMIN')")
+  @PostMapping("/new")
+  public ResponseEntity<?> create(@RequestBody @Valid OwnerDto ownerDto, BindingResult bindingResult) {
+    if (bindingResult.hasErrors()) {
+      String message = bindingResult.getFieldErrors().stream()
+          .map(FieldError::getDefaultMessage)
+          .collect(Collectors.joining(", "));
+      throw new RuntimeException(message);
     }
-    catch (Exception e)
-    {
-      e.printStackTrace();
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
+    service.saveOrUpdate(service.toEntity(ownerDto));
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @PatchMapping("/{id}")
-  @PreAuthorize("hasAnyAuthority('write')")
-  public ResponseEntity<?> update(@PathVariable("id") Long id, OwnerDto ownerDto) {
-    try {
-      Owner owner = service.findById(id).orElse(null);
-      if (owner != null) {
-        ownerDto.setId(owner.getId());
-        owner = mapper.toOwner(ownerDto);
-        service.saveOrUpdate(owner);
-        return new ResponseEntity<>(HttpStatus.OK);
-      }
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+  public ResponseEntity<?> update(@PathVariable("id") Long id, @RequestBody OwnerDto ownerDto)
+      throws NoEntityException {
+    Optional<Owner> maybeOwner = service.findById(id);
+    if (maybeOwner.isEmpty()) {
+      throw new NoEntityException(String.format("Owner with id = %s doesn't exist", id));
     }
-    catch (Exception e)
-    {
-      e.printStackTrace();
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+    Owner owner = maybeOwner.get();
+    if (ownerDto.getUsername() != null) {
+      owner.setUsername(ownerDto.getUsername());
     }
+    if (ownerDto.getPassword() != null) {
+      owner.setPassword(ownerDto.getPassword());
+    }
+    if (ownerDto.getName() != null) {
+      owner.setName(ownerDto.getName());
+    }
+    if (ownerDto.getBirthDate() != null) {
+      owner.setBirthDate(LocalDate.parse(ownerDto.getBirthDate()));
+    }
+
+    service.saveOrUpdate(owner);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyAuthority('write')")
-  public ResponseEntity<?> delete(@PathVariable("id") Long id) {
-    Owner owner = service.findById(id).orElse(null);
-    if (owner != null) {
-      service.delete(owner);
-      return new ResponseEntity<>(HttpStatus.OK);
-    }
-    else {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
+  public ResponseEntity<?> delete(@PathVariable("id") Long id) throws NoEntityException {
+    service.delete(id);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 
 }
