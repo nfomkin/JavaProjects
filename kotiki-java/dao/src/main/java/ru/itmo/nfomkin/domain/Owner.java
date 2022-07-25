@@ -24,9 +24,11 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -35,6 +37,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = "username")
+@ToString(of = {"id", "username"})
 @Builder
 @Entity
 @Table(name = "owners")
@@ -52,7 +56,7 @@ public class Owner implements UserDetails {
   private String name;
   private LocalDate birthDate;
   @Builder.Default
-  @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
   List<Cat> cats = new ArrayList<>();
   @ElementCollection(targetClass = Role.class,fetch = FetchType.EAGER)
   @CollectionTable(name = "user_authority", joinColumns = @JoinColumn(name = "user_id"))
@@ -60,18 +64,18 @@ public class Owner implements UserDetails {
   private Set<Role> roles;
 
 
-  @Override
-  public String toString() {
-    return "Owner{" +
-        "id=" + id +
-        ", name='" + name + '\'' +
-        ", birthDate=" + birthDate +
-        '}';
+  public void addCat(Cat cat) {
+    if (!cats.contains(cat)) {
+      cats.add(cat);
+      cat.setOwner(this);
+    }
   }
 
-  public void addCat(Cat cat) {
-    cats.add(cat);
-    cat.setOwner(this);
+  public void removeCat(Cat cat) {
+    if (cats.contains(cat)) {
+      cats.remove(cat);
+      cat.setOwner(null);
+    }
   }
 
   @Override

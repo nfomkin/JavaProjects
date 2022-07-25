@@ -27,13 +27,13 @@ class CatRepositoryTest {
         .password("123")
         .name("Nikita Fomkin")
         .build();
-    owner = ownerRepository.save(owner);
+    ownerRepository.save(owner);
 
     Cat cat = Cat.builder()
         .name("Sonya")
         .owner(owner)
         .build();
-    cat = catRepository.save(cat);
+    catRepository.save(cat);
 
     // when
     Optional<Cat> foundCat = catRepository.findByOwnerAndId(owner, cat.getId());
@@ -56,7 +56,7 @@ class CatRepositoryTest {
         .password("123")
         .name("Nikita Fomkin")
         .build();
-    owner = ownerRepository.save(owner);
+    ownerRepository.save(owner);
 
     Cat cat1 = Cat.builder()
         .name("Sonya")
